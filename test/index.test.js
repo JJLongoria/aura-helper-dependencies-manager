@@ -1,6 +1,8 @@
 const DependenciesManager = require('../index');
-const { TypesFactory } = require('@ah/core').Types;
+const TypesFactory = require('@ah/metadata-factory');
 const { FileWriter } = require('@ah/core').FileSystem;
+const { MetadataType, MetadataObject, MetadataItem } = require('@ah/core').Types;
+const { MetadataTypes } = require('@ah/core').Values;
 
 describe('Testing ./index.js', () => {
     test('Testing repairDependencies()', () => {
@@ -27,24 +29,18 @@ describe('Testing ./index.js', () => {
         }, function (status) {
 
         });
+        const types = {};
+        types[MetadataTypes.PERMISSION_SET] = new MetadataType(MetadataTypes.PERMISSION_SET, false);
+        types[MetadataTypes.PERMISSION_SET].addChild(new MetadataObject('permission', true));
+        types['Profilesss']  = new MetadataType('Profilesss', false);
+        types['Profilesss'].addChild(new MetadataObject('permission', true));
+        types['CustomFields'] = new MetadataType('CustomFields', true);
+        types['Labels'] = new MetadataType('Labels', true);
         DependenciesManager.repairDependencies('./test/assets/SFDXProjectCopy', metadataDetails, {
             compress: true,
             sortOrder: 'simpleFirst',
             ignoreFile: './test/assets/SFDXProjectCopy/.ahignore.json',
-            typesToRepair: {
-                PermissionSet: [
-                    'permission'
-                ],
-                Profilesss: [
-                    'permission'
-                ],
-                CustomFields: [
-
-                ],
-                Labels: [
-                    
-                ]
-            }
+            typesToRepair: types,
         }, function (status) {
 
         });
