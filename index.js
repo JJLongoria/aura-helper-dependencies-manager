@@ -1,10 +1,12 @@
-const { MetadataTypes, DataTypes } = require('@ah/core').Values;
-const { TypesFactory } = require('@ah/core').Types;
-const { Validator, XMLUtils } = require('@ah/core').Utils;
-const { XMLParser } = require('@ah/core').Languages;
+const { MetadataTypes, DataTypes, ProgressStages } = require('@ah/core').Values;
+const { ProgressStatus } = require('@ah/core').Types;
+const TypesFactory = require('@ah/metadata-factory');
+const { Validator, MetadataUtils, Utils } = require('@ah/core').CoreUtils;
+const { XML } = require('@ah/languages');
 const { FileReader, FileWriter } = require('@ah/core').FileSystem;
 const XMLDefinitions = require('@ah/xml-definitions');
 const XMLCompressor = require('@ah/xml-compresor');
+const XMLUtils = XML.XMLUtils;
 
 const SUPPORTED_TYPES = [
     MetadataTypes.ACCOUNT_RELATIONSHIP_SHARE_RULE,
@@ -209,15 +211,17 @@ class DependeciesManager {
     static repairDependencies(projectPath, metadataDetails, options, progressCallback) {
         if (!options)
             options = {
-                typesToRepair: undefined,
+                types: undefined,
                 compress: false,
                 sortOrder: undefined,
                 checkOnly: false,
                 ignoreFile: undefined,
             }
-        callProgressCallback(progressCallback, 'prepare');
+        callProgressCallback(progressCallback, ProgressStages.PREPARE);
         if (options.ignoreFile)
             options.ignoredMetadata = createIgnoreMetadataMap(Validator.validateJSONFile(options.ignoreFile, 'Ignore'));
+        if (options.types)
+            Validator.validateMetadataJSON(options.types)
         metadataDetails = TypesFactory.createMetadataDetails(metadataDetails);
         const folderMetadataMap = TypesFactory.createFolderMetadataMap(metadataDetails);
         const metadataFromFileSystem = TypesFactory.createMetadataTypesFromFileSystem(folderMetadataMap, projectPath);
@@ -229,24 +233,41 @@ module.exports = DependeciesManager;
 function repair(metadataFromFileSystem, options, progressCallback) {
     let errors = {};
     for (const metadataTypeName of Object.keys(metadataFromFileSystem)) {
-        if (!SUPPORTED_TYPES.includes(metadataTypeName))
+        if (!SUPPORTED_TYPES.includes(metadataTypeName) || !metadataFromFileSystem[metadataTypeName])
             continue;
-        if (options.typesToRepair && !options.typesToRepair[metadataTypeName])
+        const haveTypesToRepair = !Utils.isNull(options.types);
+        const typeToRepair = (haveTypesToRepair) ? options.types[metadataTypeName] : undefined;
+        if (haveTypesToRepair && !typeToRepair)
             continue;
-        callProgressCallback(progressCallback, 'startType', metadataTypeName);
+        callProgressCallback(progressCallback, ProgressStages.START_TYPE, metadataTypeName);
         const metadataType = metadataFromFileSystem[metadataTypeName];
         const xmlDefinition = XMLDefinitions.getRawDefinition(metadataTypeName);
         if (metadataType.haveChilds()) {
             for (const metadataObjectName of Object.keys(metadataType.getChilds())) {
-                if (options.typesToRepair && !options.typesToRepair[metadataTypeName].includes(metadataObjectName) && !options.typesToRepair[metadataTypeName].includes('*'))
-                    continue;
-                callProgressCallback(progressCallback, 'startObject', metadataTypeName, metadataObjectName);
-                const metadataObject = metadataType.getChild(metadataObjectName);
-                if (metadataObject.haveChilds()) {
-                    for (const metadataItemName of Object.keys(metadataObject.getChilds())) {
-                        callProgressCallback(progressCallback, 'startItem', metadataTypeName, metadataObjectName, metadataItemName);
-                        const metadataItem = metadataObject.getChild(metadataItemName);
-                        const fileErrors = processXMLFile(xmlDefinition, metadataType, metadataObject, metadataItem, metadataFromFileSystem, options);
+                const objectToRepair = (Utils.isNull(typeToRepair) || !MetadataUtils.haveChilds(typeToRepair)) ? undefined : typeToRepair.childs[metadataObjectName];
+                if (!haveTypesToRepair || (typeToRepair && typeToRepair.checked) || (objectToRepair && objectToRepair.checked)) {
+                    callProgressCallback(progressCallback, ProgressStages.START_OBJECT, metadataTypeName, metadataObjectName);
+                    const metadataObject = metadataType.getChild(metadataObjectName);
+                    if (metadataObject.haveChilds()) {
+                        for (const metadataItemName of Object.keys(metadataObject.getChilds())) {
+                            const itemToRepair = (Utils.isNull(objectToRepair) || !MetadataUtils.haveChilds(objectToRepair)) ? undefined : objectToRepair.childs[metadataItemName];
+                            if (!haveTypesToRepair || (typeToRepair && typeToRepair.checked) || (objectToRepair && objectToRepair.checked) || (itemToRepair && itemToRepair.checked)) {
+                                callProgressCallback(progressCallback, ProgressStages.START_ITEM, metadataTypeName, metadataObjectName, metadataItemName);
+                                const metadataItem = metadataObject.getChild(metadataItemName);
+                                const fileErrors = processXMLFile(xmlDefinition, metadataType, metadataObject, metadataItem, metadataFromFileSystem, options);
+                                if (fileErrors) {
+                                    if (!errors[metadataTypeName])
+                                        errors[metadataTypeName] = {
+                                            metadataType: metadataTypeName,
+                                            errors: [],
+                                        }
+                                    errors[metadataTypeName].errors.push(fileErrors);
+                                }
+                                callProgressCallback(progressCallback, ProgressStages.END_ITEM, metadataTypeName, metadataObjectName, metadataItemName);
+                            }
+                        }
+                    } else {
+                        const fileErrors = processXMLFile(xmlDefinition, metadataType, metadataObject, undefined, metadataFromFileSystem, options);
                         if (fileErrors) {
                             if (!errors[metadataTypeName])
                                 errors[metadataTypeName] = {
@@ -255,23 +276,12 @@ function repair(metadataFromFileSystem, options, progressCallback) {
                                 }
                             errors[metadataTypeName].errors.push(fileErrors);
                         }
-                        callProgressCallback(progressCallback, 'endItem', metadataTypeName, metadataObjectName, metadataItemName);
                     }
-                } else {
-                    const fileErrors = processXMLFile(xmlDefinition, metadataType, metadataObject, undefined, metadataFromFileSystem, options);
-                    if (fileErrors) {
-                        if (!errors[metadataTypeName])
-                            errors[metadataTypeName] = {
-                                metadataType: metadataTypeName,
-                                errors: [],
-                            }
-                        errors[metadataTypeName].errors.push(fileErrors);
-                    }
+                    callProgressCallback(progressCallback, ProgressStages.END_OBJECT, metadataTypeName, metadataObjectName);
                 }
-                callProgressCallback(progressCallback, 'endObject', metadataTypeName, metadataObjectName);
             }
         }
-        callProgressCallback(progressCallback, 'endType', metadataTypeName);
+        callProgressCallback(progressCallback, ProgressStages.END_TYPE, metadataTypeName);
     }
     if (Object.keys(errors).length === 0)
         errors = undefined;
@@ -283,63 +293,65 @@ function repair(metadataFromFileSystem, options, progressCallback) {
 
 function callProgressCallback(progressCallback, stage, type, object, item, file) {
     if (progressCallback)
-        progressCallback.call(this, {
-            stage: stage,
-            metadataType: type,
-            metadataObject: object,
-            metadataItem: item,
-            file: file
-        })
+        progressCallback.call(this, new ProgressStatus(stage, undefined, undefined, type, object, item, file));
 }
 
 function processXMLFile(xmlDefinition, metadataType, metadataObject, metadataItem, metadataFromFileSystem, options) {
-    let filePath;
-    if (metadataItem)
-        filePath = metadataItem.path;
-    else
-        filePath = metadataObject.path;
-    if (!filePath)
-        return;
-    filePath = Validator.validateFilePath(filePath);
-    let errors = [];
-    let fileErrors;
-    const xmlRoot = XMLParser.parseXML(FileReader.readFileSync(filePath), true);
-    const xmlData = XMLUtils.cleanXMLFile(xmlDefinition, xmlRoot[metadataType.name]);
-    for (const xmlKey of Object.keys(xmlDefinition)) {
-        const fieldValue = xmlData[xmlKey];
-        if (fieldValue != undefined) {
-            if (!Array.isArray(fieldValue) && typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)
-                continue;
-            if (Array.isArray(fieldValue) && fieldValue.length === 0)
-                continue;
-            const fieldDefinition = xmlDefinition[xmlKey];
-            const fieldErrors = processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, options);
-            if (fieldErrors) {
-                for (const error of fieldErrors)
-                    errors.push(error);
-                if (!options.checkOnly) {
-                    if ((!isComplexField(fieldDefinition)) || (fieldDefinition.datatype === DataTypes.OBJECT && !haveComplexChild(fieldDefinition))) {
-                        delete xmlData[xmlKey];
+    try {
+        let filePath;
+        if (metadataItem)
+            filePath = metadataItem.path;
+        else
+            filePath = metadataObject.path;
+        if (!filePath)
+            return;
+        filePath = Validator.validateFilePath(filePath);
+        let errors = [];
+        let fileErrors;
+        const xmlRoot = XML.XMLParser.parseXML(FileReader.readFileSync(filePath), true);
+        const xmlData = XMLUtils.cleanXMLFile(xmlDefinition, xmlRoot[metadataType.name]);
+        for (const xmlKey of Object.keys(xmlDefinition)) {
+            const fieldValue = xmlData[xmlKey];
+            if (fieldValue != undefined) {
+                if (!Array.isArray(fieldValue) && typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)
+                    continue;
+                if (Array.isArray(fieldValue) && fieldValue.length === 0)
+                    continue;
+                const fieldDefinition = xmlDefinition[xmlKey];
+                const fieldErrors = processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, options);
+                if (fieldErrors) {
+                    for (const error of fieldErrors)
+                        errors.push(error);
+                    if (!options.checkOnly) {
+                        if ((!isComplexField(fieldDefinition)) || (fieldDefinition.datatype === DataTypes.OBJECT && !haveComplexChild(fieldDefinition))) {
+                            delete xmlData[xmlKey];
+                        }
                     }
                 }
             }
         }
-    }
-    if (errors.length > 0) {
-        fileErrors = {
-            file: filePath,
-            errors: errors
-        };
-        if (!options.checkOnly) {
-            xmlRoot[metadataType.name] = xmlData;
-            if (options.compress)
-                content = XMLCompressor.getCompressedContentSync(xmlRoot, options.sortOrder);
-            else
-                content = XMLParser.toXML(xmlRoot);
-            FileWriter.createFileSync(filePath, content);
+        if (errors.length > 0) {
+            fileErrors = {
+                file: filePath,
+                errors: errors
+            };
+            if (!options.checkOnly) {
+                xmlRoot[metadataType.name] = xmlData;
+                if (options.compress)
+                    content = XMLCompressor.getCompressedContentSync(xmlRoot, options.sortOrder);
+                else
+                    content = XML.XMLParser.toXML(xmlRoot);
+                FileWriter.createFileSync(filePath, content);
+            }
         }
+        return fileErrors;
+    } catch (error) {
+        console.log(error);
+        console.log(metadataType);
+        console.log(metadataObject);
+        console.log(metadataItem);
+        throw error;
     }
-    return fileErrors;
 }
 
 function processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, options) {
@@ -430,7 +442,7 @@ function checkDependency(fieldValue, fieldDefinition, metadataFromFileSystem, op
     if (fieldValue['#text']) {
         value = fieldValue['#text'];
     }
-    if(fieldValue['@attrs'] && fieldValue['@attrs']['xsi:nil']){
+    if (fieldValue['@attrs'] && fieldValue['@attrs']['xsi:nil']) {
         return error;
     }
     if (fieldDefinition.metadataType && mustProcessType(fieldDefinition.metadataType, value)) {
@@ -638,11 +650,11 @@ function createIgnoreTypeMap(objectsForIgnore) {
 function processErrors(errors, callback) {
     if (errors === undefined)
         return undefined;
-    callProgressCallback(callback, 'onErrors');
+    callProgressCallback(callback, ProgressStages.PROCESS);
     const result = {};
     for (const metadataTypeName of Object.keys(errors)) {
         let errorsAdded = [];
-        callProgressCallback(callback, 'startError', metadataTypeName);
+        callProgressCallback(callback, ProgressStages.START_ERROR, metadataTypeName);
         const typeErrors = errors[metadataTypeName];
         for (let typeError of typeErrors.errors) {
             let fileContent = FileReader.readFileSync(typeError.file);
@@ -653,10 +665,10 @@ function processErrors(errors, callback) {
                 let indexElement = 0;
                 let nLine = 1;
                 for (const line of lines) {
-                    let startTag = XMLParser.startTag(line, elementPaths[indexElement]);
+                    let startTag = XML.XMLParser.startTag(line, elementPaths[indexElement]);
                     while (startTag) {
                         indexElement++;
-                        startTag = XMLParser.startTag(line, elementPaths[indexElement]);
+                        startTag = XML.XMLParser.startTag(line, elementPaths[indexElement]);
                     }
                     if (indexElement === maxIndex) {
                         if (line.indexOf(fileError.value) !== -1) {
@@ -664,7 +676,7 @@ function processErrors(errors, callback) {
                             const endColumn = startColumn + fileError.value.length;
                             const errorKey = fileError.elementPath + fileError.value + fileError.metadataObject + nLine + startColumn + endColumn;
                             if (!errorsAdded.includes(errorKey)) {
-                                callProgressCallback(callback, 'fileError', metadataTypeName, fileError.metadataObject, fileError.metadataItem, typeError.file);
+                                callProgressCallback(callback, ProgressStages.FILE_ERROR, metadataTypeName, fileError.metadataObject, fileError.metadataItem, typeError.file);
                                 if (!result[metadataTypeName])
                                     result[metadataTypeName] = [];
                                 result[metadataTypeName].push({
@@ -681,16 +693,16 @@ function processErrors(errors, callback) {
                             }
                         }
                     }
-                    let endTag = XMLParser.endTag(line, elementPaths[indexElement - 1]);
+                    let endTag = XML.XMLParser.endTag(line, elementPaths[indexElement - 1]);
                     while (endTag || indexElement > 0) {
                         indexElement--;
-                        endTag = XMLParser.endTag(line, elementPaths[indexElement - 1]);
+                        endTag = XML.XMLParser.endTag(line, elementPaths[indexElement - 1]);
                     }
                     nLine++;
                 }
             }
         }
-        callProgressCallback(callback, 'endError', metadataTypeName);
+        callProgressCallback(callback, ProgressStages.END_ERROR, metadataTypeName);
     }
     return result;
 }
