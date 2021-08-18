@@ -1,5 +1,5 @@
 const { MetadataTypes, DataTypes, ProgressStages } = require('@ah/core').Values;
-const { ProgressStatus } = require('@ah/core').Types;
+const { ProgressStatus, RepairDependenciesOptions } = require('@ah/core').Types;
 const TypesFactory = require('@ah/metadata-factory');
 const { Validator, MetadataUtils, Utils } = require('@ah/core').CoreUtils;
 const { XML } = require('@ah/languages');
@@ -202,26 +202,66 @@ const STANDARD_PROFILES = [
     'StandardAul'
 ];
 
+/**
+ * Class to check dependencies errors on files or repair it automatically. This class analize all metadata types and files to check if any file or type does not exists
+ * on the local project to repair it from the files where exists. 
+ */
 class DependeciesManager {
 
+    /**
+     * Method to get the default options object to Repair Dependencies. The available options are
+     *      - types: JSON Metadata Object or JSON Metadata File path with the objects to repair (if you don't want to repair all Metadata Types)
+     *      - compress: true to compress the affected XML files
+     *      - sortOrder: Sort order to compress XML Files
+     *      - checkOnly: true to only check  and return the errors data, false to repair dependencies automatically 
+     *      - ignoreFile: ignore file path to use to ignore metadata types from repair dependencies
+     * 
+     * @returns {RepairDependenciesOptions} Returns an object with the default options. The default values are:
+     *      - types: undefined
+     *      - compress: false
+     *      - sortOrder: undefined
+     *      - checkOnly: false
+     *      - ignoreFile: undefined
+     */
+    static options(){
+        return new RepairDependenciesOptions();
+    }
+
+    /**
+     * Method to get a list with all supported types to repair or check dependencies
+     * 
+     * @returns {Array<String>} Return a list with the supported Metadata Type API Names 
+     */
     static getSupportedTypes() {
         return SUPPORTED_TYPES;
     }
 
+    /**
+     * Method to repair or check any Salesforce project dependencies to fix possible deploy errors.
+     * @param {String} projectPath Path to the root project folder
+     * @param {Array<MetadataDetail>} metadataDetails List of metadata details
+     * @param {RepairDependenciesOptions} options Options object to process this method on several forms
+     * @param {Function} progressCallback Callback function to handle the repair progress
+     * 
+     * @returns {Object} Return an object with the errors data (The errors output its different if you choose onlyCheck or repair dependencies)
+     * 
+     * @throws {WrongDirectoryPathException} If the project path is not a String or can't convert to absolute path
+     * @throws {DirectoryNotFoundException} If the project path not exists or not have access to it
+     * @throws {InvalidDirectoryPathException} If the project path is not a directory
+     * @throws {WrongFilePathException} If the ignore file or types file is not a String or can't convert to absolute path
+     * @throws {FileNotFoundException} If the ignore file or types file not exists or not have access to it
+     * @throws {InvalidFilePathException} If the ignore file or types file is not a file
+     * @throws {WrongFormatException} If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
+     */
     static repairDependencies(projectPath, metadataDetails, options, progressCallback) {
         if (!options)
-            options = {
-                types: undefined,
-                compress: false,
-                sortOrder: undefined,
-                checkOnly: false,
-                ignoreFile: undefined,
-            }
+            options = DependeciesManager.options();
         callProgressCallback(progressCallback, ProgressStages.PREPARE);
+        projectPath = Validator.validateFolderPath(projectPath);
         if (options.ignoreFile)
             options.ignoredMetadata = createIgnoreMetadataMap(Validator.validateJSONFile(options.ignoreFile, 'Ignore'));
         if (options.types)
-            Validator.validateMetadataJSON(options.types)
+            options.types = Validator.validateMetadataJSON(options.types)
         metadataDetails = TypesFactory.createMetadataDetails(metadataDetails);
         const folderMetadataMap = TypesFactory.createFolderMetadataMap(metadataDetails);
         const metadataFromFileSystem = TypesFactory.createMetadataTypesFromFileSystem(folderMetadataMap, projectPath);
