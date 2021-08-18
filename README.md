@@ -1,13 +1,41 @@
 # **Aura Helper Dependencies Manager Module**
 Module to check and repair Metadata Dependencies on Salesforce's project files. You can repair your dependencies with one simple method or check if have errors. Also you can use a .ahignore.json file (see [Ignore File](#ignore-file) section) to exclude the specified metadata types when check dependencies error and compress or not the affected XML files. 
 
+---
+
+## *Table of Contents*
+
+- [**DependeciesManager Class**](#dependenciesmanager-class)
+
+- [**Repair Response**](#repair-response)
+  
+- [**Only Check Response**](#only-check-response)
+  
+- [**Metadata JSON Format**](#metadata-json-format)
+
+- [**Ignore File**](#ignore-file)
+
+---
+
 # [**DependeciesManager Class**](#dependenciesmanager-class)
 Class to check dependencies errors on files or repair it automatically. This class analize all metadata types and files to check if any file or type does not exists on the local project to repair it from the files where exists.
 
 # [**Methods**](#dependenciesmanager-class-methods)
 
+  - [**options()**](#options)
+
+    Method to get the default options object to Repair Dependencies
+
+  - [**getSupportedTypes()**](#getsupportedtypes)
+
+    Method to get a list with all supported types to repair or check dependencies
+
+  - [**repairDependencies(projectPath, metadataDetails, options, progressCallback)**](#repairdependenciesprojectpath-metadatadetails-options-progresscallback)
+
+    Method to repair or check any Salesforce project dependencies to fix possible deploy errors
+
 ---
-## options()
+## [**options()**](#options)
 Method to get the default options object to Repair Dependencies. The available options are:
 
 - **types**: JSON Metadata Object or JSON Metadata File path with the objects to repair (if you don't want to repair all Metadata Types). See [Metadata JSON Format](#metadata-file) section to understand the JSON Metadata Format 
@@ -29,7 +57,7 @@ The default values are:
     ignoreFile: undefined
 ---
 
-## getSupportedTypes()
+## [**getSupportedTypes()**](#getsupportedtypes)
 Method to get a list with all supported types to repair or check dependencies
 
 ### **Return:**
@@ -45,7 +73,7 @@ Return a list with the supported Metadata Type API Names
     // ['CustomApplication', 'PermissionSet'...]
 ---
 
-### repairDependencies(projectPath, metadataDetails, options, progressCallback)
+## [**repairDependencies(projectPath, metadataDetails, options, progressCallback)**](#repairdependenciesprojectpath-metadatadetails-options-progresscallback)
 Method to repair or check any Salesforce project dependencies to fix possible deploy errors.
 
 ### **Parameters:**
@@ -519,7 +547,6 @@ The Metadata JSON Format used by Aura Helper Framework and modules have the next
 
 ### **Example**:
 
-***
     {
         "CustomObject": {
             "name": "CustomObject",
@@ -587,7 +614,7 @@ The Metadata JSON Format used by Aura Helper Framework and modules have the next
         }
     }
 
-# [Ignore File](#ignore-file)
+# [**Ignore File**](#ignore-file)
 
 The ignore file is a JSON file used on ignore, create package or dependencies manager modules. On this file you can specify metadata types, objects and elements for ignore or delete from your local project, package files or ignore when check dependencies.
 
@@ -661,4 +688,4 @@ The ignore file have the next structure
 
 #### IMPORTANT
 
-    Some Metadata Types have singular and plural name like CustomLabels, MatchingRules, EscalationRules... For ignore or remove this types you must use the plural name, if use the singular name the ignore process not take effect with this types.
+Some Metadata Types have singular and plural name like CustomLabels, MatchingRules, EscalationRules... For ignore or remove this types you must use the plural name, if use the singular name the ignore process not take effect with this types.
