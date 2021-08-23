@@ -240,8 +240,8 @@ class DependeciesManager {
      * Method to repair or check any Salesforce project dependencies to fix possible deploy errors.
      * @param {String} projectPath Path to the root project folder
      * @param {Array<MetadataDetail>} metadataDetails List of metadata details
-     * @param {RepairDependenciesOptions} options Options object to process this method on several forms
-     * @param {Function} progressCallback Callback function to handle the repair progress
+     * @param {RepairDependenciesOptions} [options] Options object to process this method on several forms
+     * @param {Function} [progressCallback] Callback function to handle the repair progress
      * 
      * @returns {Object} Return an object with the errors data (The errors output its different if you choose onlyCheck or repair dependencies)
      * 
