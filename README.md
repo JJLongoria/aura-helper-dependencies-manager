@@ -713,7 +713,7 @@ This method can throw the next exceptions:
     });
 
 **Repair specified types**
-You can choose specified Metadata Types (and childs) to repair. See [Metadata JSON Format](#metadata-file) section to understand the JSON Metadata Format
+You can choose specified Metadata Types (and childs) to repair. See [Metadata JSON Format](#metadata-json-format) section to understand the JSON Metadata Format
 
     const { Types, Values } = require('@ah/core');
     const DependenciesManager = require('@ah/dependencies-manager');
@@ -1051,7 +1051,7 @@ Example:
         ]
     }
 
-# [**Metadata JSON Format**](#metadata-file)
+# [**Metadata JSON Format**](#metadata-json-format)
 
 The Metadata JSON Format used by Aura Helper Framework and modules have the next structure. Some fields are required and the datatypes checked to ensure the correct file structure. 
 
