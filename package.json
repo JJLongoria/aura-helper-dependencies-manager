@@ -1,6 +1,7 @@
 {
-  "name": "@ah/dependencies-manager",
+  "name": "@aurahelper/dependencies-manager",
   "productName": "Aura Helper Salesforce Dependencies Manager Module",
+  "displayName": "Aura Helper Framework Salesforce Dependencies Manager",
   "version": "1.0.0",
   "description": "Aura Helper Dependencies Manager Module is a module to handle, check or repair automatically the salesforce's project dependencies. This module analize your local project, and repair the metadata files accordinglly",
   "main": "index.js",
@@ -27,7 +28,7 @@
     "Apex",
     "force.com",
     "DevOps",
-		"devops",
+    "devops",
     "Aura Helper Salesforce Dependencies Manager",
     "Dependencies Manager",
     "ah dependencies manager",
@@ -42,18 +43,18 @@
     "url": "https://github.com/JJLongoria/aura-helper-dependencies-manager"
   },
   "bugs": {
-		"url": "https://github.com/JJLongoria/aura-helper-dependencies-manager/issues",
-		"email": "juanjoselongoria@gmail.com"
-	},
+    "url": "https://github.com/JJLongoria/aura-helper-dependencies-manager/issues",
+    "email": "juanjoselongoria@gmail.com"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "jest": "^26.6.3"
   },
   "dependencies": {
-    "@ah/core": "file:../ah-core",
-    "@ah/languages": "file:../ah-languages",
-    "@ah/xml-compresor": "file:../ah-xml-compressor",
-    "@ah/xml-definitions": "file:../ah-xml-definitions",
-    "@ah/metadata-factory": "file:../ah-metadata-factory"
+    "@aurahelper/core": "^1.0.0",
+    "@aurahelper/languages": "^1.0.0",
+    "@aurahelper/metadata-factory": "^1.0.0",
+    "@aurahelper/xml-compressor": "^1.0.0",
+    "@aurahelper/xml-definitions": "^1.0.0"
   }
 }

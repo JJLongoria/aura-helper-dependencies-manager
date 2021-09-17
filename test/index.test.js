@@ -1,8 +1,8 @@
 const DependenciesManager = require('../index');
-const TypesFactory = require('@ah/metadata-factory');
-const { FileWriter } = require('@ah/core').FileSystem;
-const { MetadataType, MetadataObject, MetadataItem } = require('@ah/core').Types;
-const { MetadataTypes } = require('@ah/core').Values;
+const TypesFactory = require('@aurahelper/metadata-factory');
+const { FileWriter } = require('@aurahelper/core').FileSystem;
+const { MetadataType, MetadataObject, MetadataItem } = require('@aurahelper/core').Types;
+const { MetadataTypes } = require('@aurahelper/core').Values;
 
 describe('Testing ./index.js', () => {
     test('Testing repairDependencies()', () => {

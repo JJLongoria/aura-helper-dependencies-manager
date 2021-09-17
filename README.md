@@ -185,7 +185,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on prepare stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -209,7 +209,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on start type stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -234,7 +234,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on start object stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -260,7 +260,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on start item stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -287,7 +287,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on end type stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -312,7 +312,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on end object stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -338,7 +338,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on end item stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -365,7 +365,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on process stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -389,7 +389,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on start errors on Metadata Type stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -414,7 +414,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on end errors on Metadata Type stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -439,7 +439,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on start file error stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -467,7 +467,7 @@ Returns the DependenciesManager object
 ### **Examples:**
 **Handling progress on compress file stage**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
 
@@ -495,7 +495,7 @@ Return the DependenciesManager object instance
 ### **Examples:**
 **Set the ignore file**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json');
 
@@ -515,7 +515,7 @@ Return the DependenciesManager object instance
 ### **Examples:**
 **Set the types to repair**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setTypesToRepair({
         CustomObject: {
@@ -541,7 +541,7 @@ Return the DependenciesManager object instance
 ### **Examples:**
 **Set compress affected XML Files**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setCompress(true);
 
@@ -560,10 +560,10 @@ Return the DependenciesManager object instance
 
 ### **Examples:**
 **Set Sort order to order XML Elements**
-    const XMLCompressor = require('@ah/xml-compressor');
+    const XMLCompressor = require('@aurahelper/xml-compressor');
     const Ignore = require('@ah/ignore');
     
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setSortOrder(sortOrder.SIMPLE_FIRST);
 ---
@@ -578,7 +578,7 @@ Return the DependenciesManager object instance
 
 ### **Examples:**
 **Set Simple first sort order to order XML Elements**
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortSimpleFirst();
@@ -594,7 +594,7 @@ Return the DependenciesManager object instance
 
 ### **Examples:**
 **Set Complex first sort order to order XML Elements**
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortComplexFirst();
@@ -610,7 +610,7 @@ Return the DependenciesManager object instance
 
 ### **Examples:**
 **Set Alphabet asc sort order to order XML Elements**
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortAlphabetAsc();
@@ -626,7 +626,7 @@ Return the DependenciesManager object instance
 
 ### **Examples:**
 **Set Alphabet desc sort order to order XML Elements**
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();  
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortAlphabetDesc();
@@ -642,7 +642,7 @@ Return a list with the supported Metadata Type API Names
 
 ### **Examples:**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const supportedTypes = DependenciesManager.getSupportedTypes();
     console.log(supportedTypes);
@@ -670,7 +670,7 @@ This method can throw the next exceptions:
 ### **Examples:**
 **Repair all Dependencies**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
 
     // Get Metadata Details from your org using @ah/connector
@@ -690,9 +690,9 @@ This method can throw the next exceptions:
 
 **Repair all Dependencies and compress**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
-    const { SORT_ORDER } = require('@ah/xml-compressor');
+    const { SORT_ORDER } = require('@aurahelper/xml-compressor');
 
     // Get Metadata Details from your org using @ah/connector
     const connection = new Connection('MyOrg', '50');
@@ -715,8 +715,8 @@ This method can throw the next exceptions:
 **Repair specified types**
 You can choose specified Metadata Types (and childs) to repair. See [Metadata JSON Format](#metadata-json-format) section to understand the JSON Metadata Format
 
-    const { Types, Values } = require('@ah/core');
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const { Types, Values } = require('@aurahelper/core');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
     const MetadataTypes = Values.MetadataTypes;
     const MetadataType = Types.MetadataType;
@@ -751,9 +751,9 @@ You can choose specified Metadata Types (and childs) to repair. See [Metadata JS
 
 You can monitorize the progress for every file and metadata type with the progress calback. The progress callback return a ProgressStatus object with the progress data and some util methods to handle the progress
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
-    const { SORT_ORDER } = require('@ah/xml-compressor');
+    const { SORT_ORDER } = require('@aurahelper/xml-compressor');
 
     // Get Metadata Details from your org using @ah/connector
     const connection = new Connection('MyOrg', '50');
@@ -817,7 +817,7 @@ This method can throw the next exceptions:
 ### **Examples:**
 **Check errors only**
 
-    const DependenciesManager = require('@ah/dependencies-manager');
+    const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
 
     // Get Metadata Details from your org using @ah/connector

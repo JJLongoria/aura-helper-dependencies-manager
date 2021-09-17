@@ -1,12 +1,12 @@
 const EventEmitter = require('events').EventEmitter;
-const { MetadataTypes, DataTypes, ProgressStages } = require('@ah/core').Values;
-const { ProgressStatus } = require('@ah/core').Types;
-const TypesFactory = require('@ah/metadata-factory');
-const { Validator, MetadataUtils, Utils } = require('@ah/core').CoreUtils;
-const { XML } = require('@ah/languages');
-const { FileReader, FileWriter } = require('@ah/core').FileSystem;
-const XMLDefinitions = require('@ah/xml-definitions');
-const XMLCompressor = require('@ah/xml-compresor');
+const { MetadataTypes, DataTypes, ProgressStages } = require('@aurahelper/core').Values;
+const { ProgressStatus } = require('@aurahelper/core').Types;
+const TypesFactory = require('@aurahelper/metadata-factory');
+const { Validator, MetadataUtils, Utils } = require('@aurahelper/core').CoreUtils;
+const { XML } = require('@aurahelper/languages');
+const { FileReader, FileWriter } = require('@aurahelper/core').FileSystem;
+const XMLDefinitions = require('@aurahelper/xml-definitions');
+const XMLCompressor = require('@aurahelper/xml-compressor');
 const XMLUtils = XML.XMLUtils;
 
 const SORT_ORDER = XMLCompressor.getSortOrderValues();
