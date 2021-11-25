@@ -45,27 +45,27 @@ The fields that start with _ are for internal use only (Does not modify this fie
 
 ### [**projectFolder**](#connection-class-fields-projectfolder)
 Path to the project root folder
-- String
+- `String`
 
 ### [**metadataDetails**](#connection-class-fields-metadatadetails)
 List of metadata details to repair dependencies.
-- Array\<MetadataDetail\>
+- `Array<MetadataDetail>`
 
 ### [**ignoreFile**](#connection-class-fields-ignorefile)
 Path to the ignore file
-- String
+- `String`
 
 ### [**typesToRepair**](#connection-class-fields-typestorepair)
 JSON Metadata Object or JSON Metadata File path with the objects to repair (if you don't want to repair all Metadata Types)
-- String
+- `String`
 
 ### [**compress**](#connection-class-fields-compress)
 True to compress the XML Files, false in otherwise. If undefined or not pass parameter, also set to true.
-- Boolean
+- `Boolean`
 
 ### [**sortOrder**](#connection-class-fields-sortorder)
 Sort order to order the XML elements. Values: simpleFirst, complexFirst, alphabetAsc or alphabetDesc. (alphabetDesc by default)
-- String
+- `String`
 
   
 </br>
@@ -78,9 +78,9 @@ Constructor to create a new connection object. All parameters are optional and y
 
 ### **Parameters:**
   - **projectFolder**: Path to the project root folder 
-    - String
+    - `String`
   - **metadataDetails**: List of metadata details 
-    - Array\<MetadataDetail\>
+    - `Array<MetadataDetail>`
 
 </br>
 
@@ -185,15 +185,15 @@ Method to handle the event when preparing execution of repair or check dependenc
 
 ### **Parameters:**
   - **callback**: Callback function to call when manager is on prepare
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on prepare stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -201,7 +201,7 @@ Returns the DependenciesManager object
     dependenciesManager.onPrepare(() => {
       console.log('Handling progress on prepare');
     }));
-
+```
 ---
 
 ## [**onStartType(callback)**](#onstarttypecallback)
@@ -209,15 +209,15 @@ Method to handle the event before start process Metadata Type
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress before start process Metadata Type
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on start type stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -226,7 +226,7 @@ Returns the DependenciesManager object
       console.log('Handling progress on start type');
       console.log('MetadataType => ' + status.entityType);
     }));
-
+```
 ---
 
 ## [**onStartObject(callback)**](#onstartobjectcallback)
@@ -234,15 +234,15 @@ Method to handle the event before start process Metadata Object
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress before start process Metadata Object
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on start object stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -252,7 +252,7 @@ Returns the DependenciesManager object
       console.log('MetadataType => ' + status.entityType);
       console.log('MetadataObject => ' + status.entityObject);
     }));
-
+```
 ---
 
 ## [**onStartItem(callback)**](#onstartitemcallback)
@@ -260,15 +260,15 @@ Method to handle the event before start process Metadata Item
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress before start process Metadata Item
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on start item stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -279,7 +279,7 @@ Returns the DependenciesManager object
       console.log('MetadataObject => ' + status.entityObject);
       console.log('MetadataItem => ' + status.entityItem);
     }));
-
+```
 ---
 
 ## [**onEndType(callback)**](#onendtypecallback)
@@ -287,15 +287,15 @@ Method to handle the event before after process Metadata Type
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress after process Metadata Type
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on end type stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -304,7 +304,7 @@ Returns the DependenciesManager object
       console.log('Handling progress on end type');
       console.log('MetadataType => ' + status.entityType);
     }));
-
+```
 ---
 
 ## [**onEndObject(callback)**](#onendobjectcallback)
@@ -312,15 +312,15 @@ Method to handle the event before after process Metadata Object
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress after process Metadata Object
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on end object stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -330,7 +330,7 @@ Returns the DependenciesManager object
       console.log('MetadataType => ' + status.entityType);
       console.log('MetadataObject => ' + status.entityObject);
     }));
-
+```
 ---
 
 ## [**onEndItem(callback)**](#onenditemcallback)
@@ -338,15 +338,15 @@ Method to handle the event before after process Metadata Item
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress after process Metadata Item
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on end item stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -357,7 +357,7 @@ Returns the DependenciesManager object
       console.log('MetadataObject => ' + status.entityObject);
       console.log('MetadataItem => ' + status.entityItem);
     }));
-
+```
 ---
 
 ## [**onProcess(callback)**](#onprocesscallback)
@@ -365,15 +365,15 @@ Method to handle the event before start processing results on some processes
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress when manager is processing results
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on process stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -381,7 +381,7 @@ Returns the DependenciesManager object
     dependenciesManager.onProcess(() => {
       console.log('Handling progress on process');
     }));
-
+```
 ---
 
 ## [**onStartErrors(callback)**](#onstarterrorscallback)
@@ -389,15 +389,15 @@ Method to handle the event before start process errors on metadata type
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress before start process errors
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on start errors on Metadata Type stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -406,7 +406,7 @@ Returns the DependenciesManager object
       console.log('Handling progress on start errors');
       console.log('MetadataType => ' + status.entityType);
     }));
-
+```
 ---
 
 ## [**onEndErrors(callback)**](#onenderrorscallback)
@@ -414,15 +414,15 @@ Method to handle the event after process errors on metadata type
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress after process errors
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on end errors on Metadata Type stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -431,7 +431,7 @@ Returns the DependenciesManager object
       console.log('Handling progress on end errors');
       console.log('MetadataType => ' + status.entityType);
     }));
-
+```
 ---
 
 ## [**onFileError(callback)**](#onfilerrorcallback)
@@ -439,15 +439,15 @@ Method to handle the event before start processing the errors encuntered on file
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress before start processing the errors encuntered on file
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on start file error stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -459,7 +459,7 @@ Returns the DependenciesManager object
       console.log('MetadataItem => ' + status.entityItem);
       console.log('File => ' + status.data);
     }));
-
+```
 ---
 
 ## [**onCompressFile(callback)**](#oncompressfilecallback)
@@ -467,15 +467,15 @@ Method to handle the event before start compress XML File on some processes
 
 ### **Parameters:**
   - **callback**: Callback function to handle progress when start compress
-    - Function
+    - `Function`
 
 ### **Return:**
 Returns the DependenciesManager object
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Handling progress on compress file stage**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const dependenciesManager = new DependenciesManager();
@@ -487,7 +487,7 @@ Returns the DependenciesManager object
       console.log('MetadataItem => ' + status.entityItem);
       console.log('File => ' + status.data);
     }));
-
+```
 ---
 
 ## [**setIgnoreFile(ignoreFile)**](#setignorefileignorefile)
@@ -495,19 +495,19 @@ Method to set the ignore file to ignore the metadata types
 
 ### **Parameters:**
   - **ignorefile**: Path to the ignore file
-    - String
+    - `String`
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Set the ignore file**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json');
-
+```
 ---
 
 ## [**setTypesToRepair(typesToRepair)**](#settypestorepairtypestorepair)
@@ -515,15 +515,15 @@ Method to set the Metadata Name or Names to ignore
 
 ### **Parameters:**
   - **typesToIgnore**: List with the Metadata Type API Names to ignore. This parameter is used to ignore only the specified metadata (also must be in ignore file) and avoid ignore all metadata types specified on the file.
-    - Array\<String\>
+    - `Array<String>`
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Set the types to repair**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setTypesToRepair({
@@ -533,7 +533,7 @@ Return the DependenciesManager object instance
             name: 'CustomObject'
         }
     });
-
+```
 ---
 
 ## [**setCompress(compress)**](#setcompresscompress)
@@ -541,19 +541,19 @@ True to compress the XML Files, false in otherwise. If undefined or not pass par
 
 ### **Parameters:**
   - **compress**: True to compress the XML Files, false in otherwise
-    - Boolean
+    - `Boolean`
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Set compress affected XML Files**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setCompress(true);
-
+```
 ---
 
 ## [**setSortOrder(sortOrder)**](#setsortordersortorder)
@@ -561,20 +561,23 @@ Method to set the sort order value to sort the XML Elements when compress
 
 ### **Parameters:**
   - **sortOrder**: Sort order to order the XML elements. Values: simpleFirst, complexFirst, alphabetAsc or alphabetDesc. (alphabetDesc by default).
-    - String
+    - `String`
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 ### **Examples:**
 **Set Sort order to order XML Elements**
+
+```javascript
     const XMLCompressor = require('@aurahelper/xml-compressor');
     const Ignore = require('@ah/ignore');
     
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setSortOrder(sortOrder.SIMPLE_FIRST);
+```
 ---
 
 ## [**sortSimpleFirst()**](#sortsimplefirst)
@@ -582,15 +585,17 @@ Method to set Simple XML Elements first as sort order (simpleFirst)
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 
 ### **Examples:**
 **Set Simple first sort order to order XML Elements**
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortSimpleFirst();
+```
 ---
 
 ## [**sortComplexFirst()**](#sortcomplexfirst)
@@ -598,15 +603,17 @@ Method to set Complex XML Elements first as sort order (complexFirst)
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 
 ### **Examples:**
 **Set Complex first sort order to order XML Elements**
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortComplexFirst();
+```
 ---
 
 ## [**sortAlphabetAsc()**](#sortalphabetasc)
@@ -614,15 +621,17 @@ Method to set Alphabet Asc as sort order (alphabetAsc)
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 
 ### **Examples:**
 **Set Alphabet asc sort order to order XML Elements**
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortAlphabetAsc();
+```
 ---
 
 ## [**sortAlphabetDesc()**](#sortalphabetdesc)
@@ -630,16 +639,17 @@ Method to set Alphabet Desc as sort order (alphabetDesc)
 
 ### **Return:**
 Return the DependenciesManager object instance
-- DependenciesManager
+- `DependenciesManager`
 
 
 ### **Examples:**
 **Set Alphabet desc sort order to order XML Elements**
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     
     const dependenciesManager = new DependenciesManager();  
     dependenciesManager.setIgnoreFile('path/to/the/ignore/file.json').sortAlphabetDesc();
-
+```
 ---
 
 ## [**getSupportedTypes()**](#getsupportedtypes)
@@ -647,15 +657,16 @@ Method to get a list with all supported types to repair or check dependencies
 
 ### **Return:**
 Return a list with the supported Metadata Type API Names 
-- Array\<String\>
+- `Array<String>`
 
 ### **Examples:**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
 
     const supportedTypes = DependenciesManager.getSupportedTypes();
     console.log(supportedTypes);
     // ['CustomApplication', 'PermissionSet'...]
+```
 ---
 
 ## [**repairDependencies()**](#repairdependencies)
@@ -663,22 +674,22 @@ Method to repair any Salesforce project dependencies to fix possible deploy erro
 
 ### **Return:**
 Return an object with the repaired errors data. See [Repair Response](#repair-response) section to understand the response.
-- Object
+- `Object`
 
 ### **Throws:**
 This method can throw the next exceptions:
 
-- **WrongDirectoryPathException**: If the project path is not a String or can't convert to absolute path
-- **DirectoryNotFoundException**: If the project path not exists or not have access to it
-- **InvalidDirectoryPathException**: If the project path is not a directory
-- **WrongFilePathException**: If the ignore file or types file is not a String or can't convert to absolute path
-- **FileNotFoundException**: If the ignore file or types file not exists or not have access to it
-- **InvalidFilePathException**: If the ignore file or types file is not a file
-- **WrongFormatException**: If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
+- **`WrongDirectoryPathException`**: If the project path is not a String or can't convert to absolute path
+- **`DirectoryNotFoundException`**: If the project path not exists or not have access to it
+- **`InvalidDirectoryPathException`**: If the project path is not a directory
+- **`WrongFilePathException`**: If the ignore file or types file is not a String or can't convert to absolute path
+- **`FileNotFoundException`**: If the ignore file or types file not exists or not have access to it
+- **`InvalidFilePathException`**: If the ignore file or types file is not a file
+- **`WrongFormatException`**: If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
 
 ### **Examples:**
 **Repair all Dependencies**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
 
@@ -696,9 +707,9 @@ This method can throw the next exceptions:
     }).catch((error) => {
         // Handle errors
     });
-
+```
 **Repair all Dependencies and compress**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
     const { SORT_ORDER } = require('@aurahelper/xml-compressor');
@@ -720,10 +731,11 @@ This method can throw the next exceptions:
     }).catch((error) => {
         // Handle errors
     });
-
+```
 **Repair specified types**
 You can choose specified Metadata Types (and childs) to repair. See [Metadata JSON Format](#metadata-json-format) section to understand the JSON Metadata Format
 
+```javascript
     const { Types, Values } = require('@aurahelper/core');
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
@@ -755,11 +767,12 @@ You can choose specified Metadata Types (and childs) to repair. See [Metadata JS
     }).catch((error) => {
         // handle errors
     });
-
+```
 **Monitorize Progress**
 
 You can monitorize the progress for every file and metadata type with the progress calback. The progress callback return a ProgressStatus object with the progress data and some util methods to handle the progress
 
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
     const { SORT_ORDER } = require('@aurahelper/xml-compressor');
@@ -802,7 +815,7 @@ You can monitorize the progress for every file and metadata type with the progre
     }).catch((error) => {
         // handle errors
     });
-
+```
 ---
 
 ## [**checkErrors()**](#checkerrors)
@@ -810,22 +823,22 @@ Method to check errors on any Salesforce project dependencies to fix possible de
 
 ### **Return:**
 Return an object with the errors data. See [Only Check Response](#only-check-response) section to understand the response.
-- Object
+- `Object`
 
 ### **Throws:**
 This method can throw the next exceptions:
 
-- **WrongDirectoryPathException**: If the project path is not a String or can't convert to absolute path
-- **DirectoryNotFoundException**: If the project path not exists or not have access to it
-- **InvalidDirectoryPathException**: If the project path is not a directory
-- **WrongFilePathException**: If the ignore file or types file is not a String or can't convert to absolute path
-- **FileNotFoundException**: If the ignore file or types file not exists or not have access to it
-- **InvalidFilePathException**: If the ignore file or types file is not a file
-- **WrongFormatException**: If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
+- **`WrongDirectoryPathException`**: If the project path is not a String or can't convert to absolute path
+- **`DirectoryNotFoundException`**: If the project path not exists or not have access to it
+- **`InvalidDirectoryPathException`**: If the project path is not a directory
+- **`WrongFilePathException`**: If the ignore file or types file is not a String or can't convert to absolute path
+- **`FileNotFoundException`**: If the ignore file or types file not exists or not have access to it
+- **`InvalidFilePathException`**: If the ignore file or types file is not a file
+- **`WrongFormatException`**: If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
 
 ### **Examples:**
 **Check errors only**
-
+```javascript
     const DependenciesManager = require('@aurahelper/xml-definitions');
     const Connection = require('@ah/connector');
 
@@ -862,10 +875,10 @@ This method can throw the next exceptions:
     }).catch((error) => {
         // handle errors
     });
-
+```
 # [**Repair Response**](#repair-response)
 When you repair dependencies with any option (compress or not, repair specified types...) the response error has the next structure:
-
+```json
     {
         "MetadataTypeName": {
             "metadataType": "MetadataTypeName"
@@ -900,9 +913,10 @@ When you repair dependencies with any option (compress or not, repair specified 
             ]
         }
     }
+```
+### **Example**:
 
-Example:
-
+```json
     {
         "CustomApplication": {
             "metadataType": "CustomApplication"
@@ -976,10 +990,12 @@ Example:
             ]
         }
     }
+```
 
 # [**Only Check Response**](#only-check-response)
 When you only check dependencies errors the response error has the next structure:
 
+```json
     {
         "MetadataTypeName": [
             {
@@ -1012,9 +1028,11 @@ When you only check dependencies errors the response error has the next structur
             }
         ]
     }
+```
 
-Example:
+### **Example**:
 
+```json
     {
         "CustomApplication": [
             {
@@ -1059,11 +1077,13 @@ Example:
             },
         ]
     }
+```
 
 # [**Metadata JSON Format**](#metadata-json-format)
 
 The Metadata JSON Format used by Aura Helper Framework and modules have the next structure. Some fields are required and the datatypes checked to ensure the correct file structure. 
 
+```json
     {
         "MetadataAPIName": {
             "name": "MetadataAPIName",                                  // Required (String). Contains the Metadata Type API Name (like object Key)
@@ -1099,8 +1119,11 @@ The Metadata JSON Format used by Aura Helper Framework and modules have the next
         }
     }
 
+```
+
 ### **Example**:
 
+```json
     {
         "CustomObject": {
             "name": "CustomObject",
@@ -1167,6 +1190,7 @@ The Metadata JSON Format used by Aura Helper Framework and modules have the next
             }
         }
     }
+```
 
 # [**Ignore File**](#ignore-file)
 
@@ -1174,6 +1198,7 @@ The ignore file is a JSON file used on ignore, create package or dependencies ma
 
 The ignore file have the next structure
 
+```javascript
     {
         // Basic structure
         "MetadataTypeAPIName": {
@@ -1197,9 +1222,11 @@ The ignore file have the next structure
             "UserPermission:*:PermissionName"
         }
     }
+```
 
-*Example*:
+### **Example**:
 
+```json
     {
         "CustomLabels": {
             "labelName1",                   // Ignore or remove the custom label "labelName1"
@@ -1239,6 +1266,8 @@ The ignore file have the next structure
             "*"                             // Ignore or remove all profiles
         }
     }
+
+```
 
 #### IMPORTANT
 
