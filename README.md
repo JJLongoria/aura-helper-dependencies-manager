@@ -1,4 +1,13 @@
 # **Aura Helper Dependencies Manager Module**
+
+[![Version](https://img.shields.io/npm/v/@aurahelper/dependencies-manager?logo=npm)](https://www.npmjs.com/package/@aurahelper/dependencies-manager)
+[![Total Downloads](https://img.shields.io/npm/dt/@aurahelper/dependencies-manager?logo=npm)](https://www.npmjs.com/package/@aurahelper/dependencies-manager)
+[![Downloads/Month](https://img.shields.io/npm/dm/@aurahelper/dependencies-manager?logo=npm)](https://www.npmjs.com/package/@aurahelper/dependencies-manager)
+[![Issues](https://img.shields.io/github/issues/jjlongoria/aura-helper-dependencies-manager)](https://github.com/JJLongoria/aura-helper-dependencies-manager/issues)
+[![Known Vulnerabilities](https://snyk.io/test/github/JJLongoria/aura-helper-dependencies-manager/badge.svg)](https://snyk.io/test/github/JJLongoria/aura-helper-dependencies-manager)
+[![Code Size](https://img.shields.io/github/languages/code-size/jjlongoria/aura-helper-dependencies-manager)](https://github.com/JJLongoria/aura-helper-dependencies-manager)
+[![License](https://img.shields.io/github/license/jjlongoria/aura-helper-dependencies-manager?logo=github)](https://github.com/JJLongoria/aura-helper-dependencies-manager/blob/master/LICENSE)
+
 Module to check and repair Metadata Dependencies on Salesforce's project files. You can repair your dependencies with one simple method or check if have errors. Also you can use a .ahignore.json file (see [Ignore File](#ignore-file) section) to exclude the specified metadata types when check dependencies error and compress or not the affected XML files. 
 
 ---
