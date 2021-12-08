@@ -417,7 +417,7 @@ export class DependenciesManager {
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setIgnoreFile(ignoreFile: string): DependenciesManager {
+    setIgnoreFile(ignoreFile?: string): DependenciesManager {
         this.ignoreFile = ignoreFile;
         return this;
     }
@@ -686,7 +686,7 @@ function processXMLFile(xmlDefinition: any, metadataFromFileSystem: { [key: stri
                 xmlRoot[metadataType.name] = xmlData;
                 let content;
                 if (manager.compress) {
-                    callEvent(manager, EVENT.COMPRESS_FILE, metadataType.name, metadataObject.name, metadataItem!.name, filePath);
+                    callEvent(manager, EVENT.COMPRESS_FILE, metadataType.name, metadataObject.name, (metadataItem) ? metadataItem.name : undefined, filePath);
                     content = new XMLCompressor().setXMLRoot(xmlRoot).setSortOrder(manager.sortOrder).getCompressedContentSync();
                 }
                 else {
