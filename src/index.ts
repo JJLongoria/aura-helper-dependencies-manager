@@ -1,17 +1,16 @@
-const EventEmitter = require('events').EventEmitter;
-const { MetadataTypes, DataTypes, ProgressStages } = require('@aurahelper/core').Values;
-const { ProgressStatus } = require('@aurahelper/core').Types;
-const TypesFactory = require('@aurahelper/metadata-factory');
-const { Validator, MetadataUtils, Utils } = require('@aurahelper/core').CoreUtils;
-const { XML } = require('@aurahelper/languages');
-const { FileReader, FileWriter } = require('@aurahelper/core').FileSystem;
-const XMLDefinitions = require('@aurahelper/xml-definitions');
-const XMLCompressor = require('@aurahelper/xml-compressor');
+import EventEmitter from "events";
+import { MetadataFactory } from '@aurahelper/metadata-factory';
+import { XMLCompressor } from '@aurahelper/xml-compressor';
+import { XML } from '@aurahelper/languages';
+import { MetadataTypes, CoreUtils, FileWriter, FileReader, MetadataDetail, MetadataType, Datatypes, DependenciesRepairResponse, DependenciesCheckResponse, ProgressStatus, MetadataObject, MetadataItem, DependenciesXMLFileError, DependencyError } from "@aurahelper/core";
+import { XMLDefinitions } from "@aurahelper/xml-definitions";
 const XMLUtils = XML.XMLUtils;
+const Utils = CoreUtils.Utils;
+const Validator = CoreUtils.Validator;
 
 const SORT_ORDER = XMLCompressor.getSortOrderValues();
 
-const SUPPORTED_TYPES = [
+const SUPPORTED_TYPES: string[] = [
     MetadataTypes.ACCOUNT_RELATIONSHIP_SHARE_RULE,
     MetadataTypes.ANIMATION_RULE,
     MetadataTypes.APPOINTMENT_SCHEDULING_POLICY,
@@ -111,7 +110,7 @@ const SUPPORTED_TYPES = [
     MetadataTypes.WORKFLOW,
 ];
 
-const TYPES_XML_RELATION = {
+const TYPES_XML_RELATION: { [key: string]: any } = {
     AssignmentRules: {
         singularName: MetadataTypes.ASSIGNMENT_RULE,
     },
@@ -189,7 +188,7 @@ const TYPES_XML_RELATION = {
     }
 };
 
-const STANDARD_PROFILES = [
+const STANDARD_PROFILES: string[] = [
     'Admin',
     'Chatter External User',
     'Chatter Free User',
@@ -205,7 +204,7 @@ const STANDARD_PROFILES = [
     'StandardAul'
 ];
 
-const EVENT = {
+const EVENT: { [key: string]: string } = {
     PREPARE: 'preapre',
     PROCESS: 'process',
     COMPRESS_FILE: 'compressFile',
@@ -218,7 +217,7 @@ const EVENT = {
     START_ERROR: 'startError',
     END_ERROR: 'endError',
     FILE_ERROR: 'fileError',
-}
+};
 
 /**
  * Class to check dependencies errors on files or repair it automatically. This class analize all metadata types and files to check if any file or type does not exists
@@ -226,24 +225,36 @@ const EVENT = {
  * 
  * All Dependecies Manager methods return a Promise with the associated data to the processes.  
  */
-class DependenciesManager {
+export class DependenciesManager {
+
+    projectFolder: string;
+    metadataDetails?: MetadataDetail[];
+    typesToRepair?: string | { [key: string]: MetadataType };
+    compress: boolean;
+    sortOrder: string;
+    ignoreFile?: string;
+    _ignoredMetadata?: { [key: string]: any };
+    _checkOnly: boolean;
+    _event: EventEmitter;
+    _typesToRepair: { [key: string]: MetadataType };
 
     /**
      * Constructor to create a new DependenciesManager instance. All parameters are optional and you can use the setters methods to set the values when you want.
-     * @param {String} [projectFolder] Path to the project root folder 
-     * @param {Array<MetadataDetail>} [metadataDetails] List of metadata details 
+     * @param {string} [projectFolder] Path to the project root folder 
+     * @param {MetadataDetail[]} [metadataDetails] List of metadata details 
      */
-    constructor(projectFolder, metadataDetails) {
-        this.projectFolder = projectFolder;
+    constructor(projectFolder?: string, metadataDetails?: MetadataDetail[]) {
+        this.projectFolder = projectFolder || './';
         this.metadataDetails = metadataDetails;
         this.typesToRepair = undefined;
         this.compress = false;
-        this.sortOrder = undefined;
+        this.sortOrder = SORT_ORDER.ALPHABET_ASC;
         this.ignoreFile = undefined;
 
-        this._ignoredMetadata;
+        this._ignoredMetadata = undefined;
         this._checkOnly = false;
         this._event = new EventEmitter();
+        this._typesToRepair = {};
     }
 
     /**
@@ -252,7 +263,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onPrepare(callback) {
+    onPrepare(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.PREPARE, callback);
         return this;
     }
@@ -263,7 +274,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onStartType(callback) {
+    onStartType(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.START_TYPE, callback);
         return this;
     }
@@ -274,7 +285,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onStartObject(callback) {
+    onStartObject(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.START_OBJECT, callback);
         return this;
     }
@@ -285,7 +296,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onStartItem(callback) {
+    onStartItem(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.START_ITEM, callback);
         return this;
     }
@@ -296,7 +307,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onEndType(callback) {
+    onEndType(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.END_TYPE, callback);
         return this;
     }
@@ -307,7 +318,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onEndObject(callback) {
+    onEndObject(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.END_OBJECT, callback);
         return this;
     }
@@ -318,7 +329,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onEndItem(callback) {
+    onEndItem(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.END_ITEM, callback);
         return this;
     }
@@ -329,7 +340,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onProcess(callback) {
+    onProcess(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.PROCESS, callback);
         return this;
     }
@@ -340,7 +351,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onStartErrors(callback) {
+    onStartErrors(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.START_ERROR, callback);
         return this;
     }
@@ -351,7 +362,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onEndErrors(callback) {
+    onEndErrors(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.END_ERROR, callback);
         return this;
     }
@@ -362,7 +373,7 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onFileError(callback) {
+    onFileError(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.FILE_ERROR, callback);
         return this;
     }
@@ -373,73 +384,73 @@ class DependenciesManager {
      * 
      * @returns {DependenciesManager} Returns the DependenciesManager object
      */
-    onCompressFile(callback) {
+    onCompressFile(callback: (status: ProgressStatus) => void): DependenciesManager {
         this._event.on(EVENT.COMPRESS_FILE, callback);
         return this;
     }
 
     /**
      * Method to set the project folder path
-     * @param {String} projectFolder Path to the project root folder
+     * @param {string} projectFolder Path to the project root folder
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setProjectFolder(projectFolder) {
+    setProjectFolder(projectFolder: string): DependenciesManager {
         this.projectFolder = projectFolder;
         return this;
     }
 
     /**
      * Method to set the metadata details to repair dependencies
-     * @param {Array<MetadataDetail>} metadataDetails List of metadata details to repair dependencies
+     * @param {MetadataDetail[]} metadataDetails List of metadata details to repair dependencies
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setMetadataDetails(metadataDetails) {
+    setMetadataDetails(metadataDetails: MetadataDetail[]): DependenciesManager {
         this.metadataDetails = metadataDetails;
         return this;
     }
 
     /**
      * Method to set the ignore file to ignore the metadata types on repair
-     * @param {String} ignorefile Path to the ignore file
+     * @param {string} ignorefile Path to the ignore file
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setIgnoreFile(ignoreFile) {
+    setIgnoreFile(ignoreFile: string): DependenciesManager {
         this.ignoreFile = ignoreFile;
         return this;
     }
 
     /**
      * Method to set the Metadata JSON Object or Metadata JSON file path to process
-     * @param {Object} typesToRepair JSON Metadata Object or JSON Metadata File path with the objects to repair (if you don't want to repair all Metadata Types)
+     * @param {string | { [key:string]: MetadataType }} typesToRepair JSON Metadata Object or JSON Metadata File path with the objects to repair (if you don't want to repair all Metadata Types)
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setTypesToRepair(typesToRepair) {
+    setTypesToRepair(typesToRepair: string | { [key: string]: MetadataType }): DependenciesManager {
         this.typesToRepair = typesToRepair;
         return this;
     }
 
     /**
      * Method to set if compress the affected XML Files when repair project metadata
-     * @param {Boolean} compress True to compress the XML Files, false in otherwise. If undefined or not pass parameter, also set to true.
+     * @param {boolean} compress True to compress the XML Files, false in otherwise. If undefined or not pass parameter, also set to true.
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setCompress(compress) {
+    setCompress(compress: boolean): DependenciesManager {
         this.compress = (compress !== undefined && Utils.isBoolean(compress)) ? compress : true;
         return this;
     }
 
     /**
      * Method to set the sort order for the XML Elements when compress the files
-     * @param {String} sortOrder Sort order to order the XML elements. Values: simpleFirst, complexFirst, alphabetAsc or alphabetDesc. (alphabetDesc by default)
+     * @param {string} sortOrder Sort order to order the XML elements. Values: simpleFirst, complexFirst, alphabetAsc or alphabetDesc. (alphabetDesc by default)
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setSortOrder(sortOrder) {
+    setSortOrder(sortOrder: string): DependenciesManager {
         this.sortOrder = sortOrder;
         return this;
     }
@@ -448,7 +459,7 @@ class DependenciesManager {
      * Method to set Simple XML Elements first as sort order (simpleFirst)
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    sortSimpleFirst() {
+    sortSimpleFirst(): DependenciesManager {
         this.sortOrder = SORT_ORDER.SIMPLE_FIRST;
         return this;
     }
@@ -457,7 +468,7 @@ class DependenciesManager {
      * Method to set Complex XML Elements first as sort order (complexFirst)
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    sortComplexFirst() {
+    sortComplexFirst(): DependenciesManager {
         this.sortOrder = SORT_ORDER.COMPLEX_FIRST;
         return this;
     }
@@ -466,7 +477,7 @@ class DependenciesManager {
      * Method to set Alphabet Asc as sort order (alphabetAsc)
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    sortAlphabetAsc() {
+    sortAlphabetAsc(): DependenciesManager {
         this.sortOrder = SORT_ORDER.ALPHABET_ASC;
         return this;
     }
@@ -475,7 +486,7 @@ class DependenciesManager {
      * Method to set Alphabet Desc as sort order (alphabetDesc)
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    sortAlphabetDesc() {
+    sortAlphabetDesc(): DependenciesManager {
         this.sortOrder = SORT_ORDER.ALPHABET_DESC;
         return this;
     }
@@ -483,16 +494,16 @@ class DependenciesManager {
     /**
      * Method to get a list with all supported types to repair or check dependencies
      * 
-     * @returns {Array<String>} Return a list with the supported Metadata Type API Names 
+     * @returns {string[]} Return a list with the supported Metadata Type API Names 
      */
-    static getSupportedTypes() {
+    static getSupportedTypes(): string[] {
         return SUPPORTED_TYPES;
     }
 
     /**
      * Method to repair any Salesforce project dependencies to fix possible deploy errors.
      * 
-     * @returns {Object} Return an object with the repaired errors data
+     * @returns {{ [key:string]: DependenciesRepairResponse } | undefined} Return an object with the repaired errors data
      * 
      * @throws {WrongDirectoryPathException} If the project path is not a String or can't convert to absolute path
      * @throws {DirectoryNotFoundException} If the project path not exists or not have access to it
@@ -502,23 +513,30 @@ class DependenciesManager {
      * @throws {InvalidFilePathException} If the ignore file or types file is not a file
      * @throws {WrongFormatException} If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
      */
-    repairDependencies() {
+    repairDependencies(): { [key: string]: DependenciesRepairResponse } | undefined {
         this._checkOnly = false;
         callEvent(this, EVENT.PREPARE);
         this.projectFolder = Validator.validateFolderPath(this.projectFolder);
-        if (this.ignoreFile)
+        if (this.ignoreFile) {
             this._ignoredMetadata = createIgnoreMetadataMap(Validator.validateJSONFile(this.ignoreFile, 'Ignore'));
-        if (this.typesToRepair)
-            this.typesToRepair = Validator.validateMetadataJSON(this.typesToRepair)
-        this.metadataDetails = TypesFactory.createMetadataDetails(this.metadataDetails);
-        const folderMetadataMap = TypesFactory.createFolderMetadataMap(this.metadataDetails);
-        const metadataFromFileSystem = TypesFactory.createMetadataTypesFromFileSystem(folderMetadataMap, this.projectFolder);
-        return repair(metadataFromFileSystem, this);
+        }
+        if (this.typesToRepair) {
+            this._typesToRepair = Validator.validateMetadataJSON(this.typesToRepair);
+            this._typesToRepair = MetadataFactory.deserializeMetadataTypes(this._typesToRepair);
+        }
+        this.metadataDetails = MetadataFactory.createMetadataDetails(this.metadataDetails);
+        const folderMetadataMap = MetadataFactory.createFolderMetadataMap(this.metadataDetails);
+        const metadataFromFileSystem = MetadataFactory.createMetadataTypesFromFileSystem(folderMetadataMap, this.projectFolder);
+        const result = repair(metadataFromFileSystem, this);
+        if(result){
+
+        }
+        return undefined;
     }
 
     /**
      * Method to check errors on any Salesforce project dependencies to fix possible deploy errors.
-     * @returns {Object} Return an object with the errors data
+     * @returns {{ [key: string]: DependenciesCheckResponse[] } | undefined} Return an object with the errors data
      * 
      * @throws {WrongDirectoryPathException} If the project path is not a String or can't convert to absolute path
      * @throws {DirectoryNotFoundException} If the project path not exists or not have access to it
@@ -528,66 +546,79 @@ class DependenciesManager {
      * @throws {InvalidFilePathException} If the ignore file or types file is not a file
      * @throws {WrongFormatException} If types is not a Metadata JSON file or Metadata JSON Object or ignore file is not a JSON file
      */
-    checkErrors() {
+    checkErrors(): { [key: string]: DependenciesCheckResponse[] } | undefined {
         this._checkOnly = true;
         callEvent(this, EVENT.PREPARE);
         this.projectFolder = Validator.validateFolderPath(this.projectFolder);
-        if (this.ignoreFile)
+        if (this.ignoreFile) {
             this._ignoredMetadata = createIgnoreMetadataMap(Validator.validateJSONFile(this.ignoreFile, 'Ignore'));
-        if (this.typesToRepair)
-            this.typesToRepair = Validator.validateMetadataJSON(this.typesToRepair)
-        this.metadataDetails = TypesFactory.createMetadataDetails(this.metadataDetails);
-        const folderMetadataMap = TypesFactory.createFolderMetadataMap(this.metadataDetails);
-        const metadataFromFileSystem = TypesFactory.createMetadataTypesFromFileSystem(folderMetadataMap, this.projectFolder);
-        return repair(metadataFromFileSystem, this);
+        }
+        if (this.typesToRepair) {
+            this._typesToRepair = Validator.validateMetadataJSON(this.typesToRepair);
+            this._typesToRepair = MetadataFactory.deserializeMetadataTypes(this._typesToRepair);
+        }
+        this.metadataDetails = MetadataFactory.createMetadataDetails(this.metadataDetails);
+        const folderMetadataMap = MetadataFactory.createFolderMetadataMap(this.metadataDetails);
+        const metadataFromFileSystem = MetadataFactory.createMetadataTypesFromFileSystem(folderMetadataMap, this.projectFolder);
+        const result = repair(metadataFromFileSystem, this);
+        if(result !== undefined){
+            return processErrors(result, this);
+        }
+        return undefined;
     }
 }
-module.exports = DependenciesManager;
 
-function repair(metadataFromFileSystem, manager) {
-    let errors = {};
+function repair(metadataFromFileSystem: { [key: string]: MetadataType }, manager: DependenciesManager): { [key: string]: DependenciesRepairResponse } | undefined {
+    let errors: { [key: string]: DependenciesRepairResponse } | undefined = {};
     for (const metadataTypeName of Object.keys(metadataFromFileSystem)) {
-        if (!SUPPORTED_TYPES.includes(metadataTypeName) || !metadataFromFileSystem[metadataTypeName])
+        if (!SUPPORTED_TYPES.includes(metadataTypeName) || !metadataFromFileSystem[metadataTypeName]) {
             continue;
-        const haveTypesToRepair = !Utils.isNull(manager.typesToRepair);
-        const typeToRepair = (haveTypesToRepair) ? manager.typesToRepair[metadataTypeName] : undefined;
-        if (haveTypesToRepair && !typeToRepair)
+        }
+        const haveTypesToRepair = Utils.hasKeys(manager._typesToRepair);
+        const typeToRepair = (haveTypesToRepair) ? manager._typesToRepair[metadataTypeName] : undefined;
+        if (haveTypesToRepair && !typeToRepair) {
             continue;
+        }
         callEvent(manager, EVENT.START_TYPE, metadataTypeName);
         const metadataType = metadataFromFileSystem[metadataTypeName];
         const xmlDefinition = XMLDefinitions.getRawDefinition(metadataTypeName);
-        if (metadataType.haveChilds()) {
+        if (metadataType.hasChilds()) {
             for (const metadataObjectName of Object.keys(metadataType.getChilds())) {
-                const objectToRepair = (Utils.isNull(typeToRepair) || !MetadataUtils.haveChilds(typeToRepair)) ? undefined : typeToRepair.childs[metadataObjectName];
+                const objectToRepair = (!typeToRepair || !typeToRepair.hasChilds()) ? undefined : typeToRepair.childs[metadataObjectName];
                 if (!haveTypesToRepair || (typeToRepair && typeToRepair.checked) || (objectToRepair && objectToRepair.checked)) {
                     callEvent(manager, EVENT.START_OBJECT, metadataTypeName, metadataObjectName);
                     const metadataObject = metadataType.getChild(metadataObjectName);
-                    if (metadataObject.haveChilds()) {
+                    if (!metadataObject) {
+                        continue;
+                    }
+                    if (metadataObject.hasChilds()) {
                         for (const metadataItemName of Object.keys(metadataObject.getChilds())) {
-                            const itemToRepair = (Utils.isNull(objectToRepair) || !MetadataUtils.haveChilds(objectToRepair)) ? undefined : objectToRepair.childs[metadataItemName];
+                            const itemToRepair = (!objectToRepair || !objectToRepair.hasChilds()) ? undefined : objectToRepair.childs[metadataItemName];
                             if (!haveTypesToRepair || (typeToRepair && typeToRepair.checked) || (objectToRepair && objectToRepair.checked) || (itemToRepair && itemToRepair.checked)) {
                                 callEvent(manager, EVENT.START_ITEM, metadataTypeName, metadataObjectName, metadataItemName);
                                 const metadataItem = metadataObject.getChild(metadataItemName);
-                                const fileErrors = processXMLFile(xmlDefinition, metadataType, metadataObject, metadataItem, metadataFromFileSystem, manager);
+                                const fileErrors = processXMLFile(xmlDefinition, metadataFromFileSystem, manager, metadataType, metadataObject, metadataItem);
                                 if (fileErrors) {
-                                    if (!errors[metadataTypeName])
+                                    if (!errors[metadataTypeName]) {
                                         errors[metadataTypeName] = {
                                             metadataType: metadataTypeName,
                                             errors: [],
-                                        }
+                                        };
+                                    }
                                     errors[metadataTypeName].errors.push(fileErrors);
                                 }
                                 callEvent(manager, EVENT.END_ITEM, metadataTypeName, metadataObjectName, metadataItemName);
                             }
                         }
                     } else {
-                        const fileErrors = processXMLFile(xmlDefinition, metadataType, metadataObject, undefined, metadataFromFileSystem, manager);
+                        const fileErrors = processXMLFile(xmlDefinition, metadataFromFileSystem, manager, metadataType, metadataObject);
                         if (fileErrors) {
-                            if (!errors[metadataTypeName])
+                            if (!errors[metadataTypeName]) {
                                 errors[metadataTypeName] = {
                                     metadataType: metadataTypeName,
                                     errors: [],
-                                }
+                                };
+                            }
                             errors[metadataTypeName].errors.push(fileErrors);
                         }
                     }
@@ -597,46 +628,49 @@ function repair(metadataFromFileSystem, manager) {
         }
         callEvent(manager, EVENT.END_TYPE, metadataTypeName);
     }
-    if (Object.keys(errors).length === 0)
+    if (!Utils.hasKeys(errors)) {
         errors = undefined;
-    if (manager._checkOnly)
-        return processErrors(errors, manager);
-    else
-        return errors;
+    }
+    return errors;
 }
 
-function callEvent(manager, stage, type, object, item, file) {
+function callEvent(manager: DependenciesManager, stage: string, type?: string, object?: string, item?: string, file?: string) {
     manager._event.emit(stage, new ProgressStatus(undefined, undefined, type, object, item, file));
 }
 
-function processXMLFile(xmlDefinition, metadataType, metadataObject, metadataItem, metadataFromFileSystem, manager) {
+function processXMLFile(xmlDefinition: any, metadataFromFileSystem: { [key: string]: MetadataType }, manager: DependenciesManager, metadataType: MetadataType, metadataObject: MetadataObject, metadataItem?: MetadataItem): DependenciesXMLFileError | undefined {
     try {
         let filePath;
-        if (metadataItem)
+        if (metadataItem) {
             filePath = metadataItem.path;
-        else
+        } else if (metadataObject) {
             filePath = metadataObject.path;
-        if (!filePath)
+        }
+        if (!filePath) {
             return;
+        }
         filePath = Validator.validateFilePath(filePath);
-        let errors = [];
-        let fileErrors;
+        let errors: DependencyError[] = [];
+        let fileErrors: DependenciesXMLFileError | undefined;
         const xmlRoot = XML.XMLParser.parseXML(FileReader.readFileSync(filePath), true);
         const xmlData = XMLUtils.cleanXMLFile(xmlDefinition, xmlRoot[metadataType.name]);
         for (const xmlKey of Object.keys(xmlDefinition)) {
             const fieldValue = xmlData[xmlKey];
-            if (fieldValue != undefined) {
-                if (!Array.isArray(fieldValue) && typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)
+            if (fieldValue !== undefined) {
+                if (!Array.isArray(fieldValue) && typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0) {
                     continue;
-                if (Array.isArray(fieldValue) && fieldValue.length === 0)
+                }
+                if (Array.isArray(fieldValue) && fieldValue.length === 0) {
                     continue;
+                }
                 const fieldDefinition = xmlDefinition[xmlKey];
-                const fieldErrors = processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, manager);
+                const fieldErrors = processXMLField(xmlDefinition, fieldValue, fieldDefinition, metadataFromFileSystem, manager);
                 if (fieldErrors) {
-                    for (const error of fieldErrors)
+                    for (const error of fieldErrors) {
                         errors.push(error);
+                    }
                     if (!manager._checkOnly) {
-                        if ((!isComplexField(fieldDefinition)) || (fieldDefinition.datatype === DataTypes.OBJECT && !haveComplexChild(fieldDefinition))) {
+                        if ((!isComplexField(fieldDefinition)) || (fieldDefinition.datatype === Datatypes.OBJECT && !haveComplexChild(fieldDefinition))) {
                             delete xmlData[xmlKey];
                         }
                     }
@@ -652,47 +686,48 @@ function processXMLFile(xmlDefinition, metadataType, metadataObject, metadataIte
                 xmlRoot[metadataType.name] = xmlData;
                 let content;
                 if (manager.compress) {
-                    callEvent(manager, EVENT.COMPRESS_FILE, metadataType, metadataObject, metadataItem, filePath);
+                    callEvent(manager, EVENT.COMPRESS_FILE, metadataType.name, metadataObject.name, metadataItem!.name, filePath);
                     content = new XMLCompressor().setXMLRoot(xmlRoot).setSortOrder(manager.sortOrder).getCompressedContentSync();
                 }
-                else
+                else {
                     content = XML.XMLParser.toXML(xmlRoot);
+                }
                 FileWriter.createFileSync(filePath, content);
             }
         }
         return fileErrors;
     } catch (error) {
-        console.log(error);
-        console.log(metadataType);
-        console.log(metadataObject);
-        console.log(metadataItem);
         throw error;
     }
 }
 
-function processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, manager) {
-    let errors = [];
+function processXMLField(xmlDefinition: any, fieldValue: any, fieldDefinition: any, metadataFromFileSystem: { [key: string]: MetadataType }, manager: DependenciesManager): DependencyError[] | undefined {
+    let errors: DependencyError[] | undefined = [];
     if (isComplexField(fieldDefinition)) {
-        if (Array.isArray(fieldValue) || fieldDefinition.datatype === DataTypes.ARRAY) {
+        if (Array.isArray(fieldValue) || fieldDefinition.datatype === Datatypes.ARRAY) {
             fieldValue = XMLUtils.forceArray(fieldValue);
-            const indexToRemove = [];
+            const indexToRemove: number[] = [];
             let index = 0;
             for (let value of fieldValue) {
                 if (fieldDefinition.fields && Object.keys(fieldDefinition.fields).length > 0) {
                     for (let key of Object.keys(fieldDefinition.fields)) {
                         const subFieldValue = value[key];
                         if (subFieldValue !== undefined && subFieldValue !== null) {
-                            if (!Array.isArray(subFieldValue) && typeof subFieldValue === 'object' && Object.keys(subFieldValue).length === 0)
+                            if (!Array.isArray(subFieldValue) && typeof subFieldValue === 'object' && Object.keys(subFieldValue).length === 0) {
                                 continue;
-                            if (Array.isArray(subFieldValue) && subFieldValue.length === 0)
+                            }
+                            if (Array.isArray(subFieldValue) && subFieldValue.length === 0) {
                                 continue;
+                            }
                             let subFieldDefinition = fieldDefinition.fields[key];
-                            if (subFieldDefinition.definitionRef)
-                                subFieldDefinition = XMLDefinitions.resolveDefinitionReference(subFieldDefinition);
-                            const fieldErrors = processXMLField(subFieldValue, subFieldDefinition, metadataFromFileSystem, manager);
+                            if (subFieldDefinition.definitionRef) {
+                                subFieldDefinition = XMLDefinitions.resolveDefinitionReference(xmlDefinition, subFieldDefinition);
+                            }
+                            const fieldErrors = processXMLField(xmlDefinition, subFieldValue, subFieldDefinition, metadataFromFileSystem, manager);
                             if (fieldErrors) {
-                                if (!indexToRemove.includes(index))
+                                if (!indexToRemove.includes(index)) {
                                     indexToRemove.push(index);
+                                }
                                 for (const error of fieldErrors) {
                                     error.elementPath = fieldDefinition.key + '>' + error.elementPath;
                                     error.xmlElement = value;
@@ -704,8 +739,9 @@ function processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, ma
                 } else {
                     const error = checkDependency(value, fieldDefinition, metadataFromFileSystem, manager);
                     if (error) {
-                        if (!indexToRemove.includes(index))
+                        if (!indexToRemove.includes(index)) {
                             indexToRemove.push(index);
+                        }
                         errors.push(error);
                     }
                 }
@@ -720,21 +756,24 @@ function processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, ma
             for (let key of Object.keys(fieldDefinition.fields)) {
                 const subFieldValue = fieldValue[key];
                 if (subFieldValue !== undefined && subFieldValue !== null) {
-                    if (!Array.isArray(subFieldValue) && typeof subFieldValue === 'object' && Object.keys(subFieldValue).length === 0)
+                    if (!Array.isArray(subFieldValue) && typeof subFieldValue === 'object' && Object.keys(subFieldValue).length === 0) {
                         continue;
-                    if (Array.isArray(subFieldValue) && subFieldValue.length === 0)
+                    }
+                    if (Array.isArray(subFieldValue) && subFieldValue.length === 0) {
                         continue;
+                    }
                     let subFieldDefinition = fieldDefinition.fields[key];
-                    if (subFieldDefinition.definitionRef)
-                        subFieldDefinition = XMLDefinitions.resolveDefinitionReference(subFieldDefinition);
-                    const fieldErrors = processXMLField(subFieldValue, subFieldDefinition, metadataFromFileSystem, manager);
+                    if (subFieldDefinition.definitionRef) {
+                        subFieldDefinition = XMLDefinitions.resolveDefinitionReference(xmlDefinition, subFieldDefinition);
+                    }
+                    const fieldErrors = processXMLField(xmlDefinition, subFieldValue, subFieldDefinition, metadataFromFileSystem, manager);
                     if (fieldErrors) {
                         for (const error of fieldErrors) {
                             error.elementPath = fieldDefinition.key + '>' + error.elementPath;
                             errors.push(error);
                         }
                         if (!manager._checkOnly) {
-                            if (fieldDefinition.datatype === DataTypes.OBJECT && !haveComplexChild(fieldDefinition)) {
+                            if (fieldDefinition.datatype === Datatypes.OBJECT && !haveComplexChild(fieldDefinition)) {
                                 delete fieldValue[key];
                             }
                         }
@@ -744,17 +783,19 @@ function processXMLField(fieldValue, fieldDefinition, metadataFromFileSystem, ma
         }
     } else {
         const error = checkDependency(fieldValue, fieldDefinition, metadataFromFileSystem, manager);
-        if (error)
+        if (error) {
             errors.push(error);
+        }
     }
-    if (errors.length === 0)
+    if (errors.length === 0) {
         errors = undefined;
+    }
     return errors;
 }
 
-function checkDependency(fieldValue, fieldDefinition, metadataFromFileSystem, manager) {
-    let error;
-    let value = fieldValue
+function checkDependency(fieldValue: any, fieldDefinition: any, metadataFromFileSystem: { [key: string]: MetadataType }, manager: DependenciesManager): DependencyError | undefined {
+    let error: DependencyError | undefined;
+    let value = fieldValue;
     if (fieldValue['#text']) {
         value = fieldValue['#text'];
     }
@@ -771,10 +812,12 @@ function checkDependency(fieldValue, fieldDefinition, metadataFromFileSystem, ma
             }
         }
         let hasError = checkError(fieldDefinition, metadataFromFileSystem, objectName, itemName);
-        if (hasError)
+        if (hasError) {
             hasError = checkSpecialErrors(fieldDefinition, metadataFromFileSystem, objectName, itemName);
-        if (hasError && manager._ignoredMetadata && manager._ignoredMetadata[fieldDefinition.metadataType])
+        }
+        if (hasError && manager._ignoredMetadata && manager._ignoredMetadata[fieldDefinition.metadataType]) {
             hasError = checkOnIgnoreErrors(fieldDefinition, manager._ignoredMetadata, objectName, itemName);
+        }
         if (hasError) {
             error = {
                 elementPath: fieldDefinition.key,
@@ -782,13 +825,13 @@ function checkDependency(fieldValue, fieldDefinition, metadataFromFileSystem, ma
                 metadataType: fieldDefinition.metadataType,
                 metadataObject: objectName,
                 metadataItem: itemName
-            }
+            };
         }
     }
     return error;
 }
 
-function checkError(fieldDefinition, metadataFromFileSystem, objectName, itemName) {
+function checkError(fieldDefinition: any, metadataFromFileSystem: { [key: string]: MetadataType }, objectName: string, itemName: string): boolean {
     if (objectName && itemName) {
         return !metadataFromFileSystem[fieldDefinition.metadataType] || !metadataFromFileSystem[fieldDefinition.metadataType].childs[objectName] || !metadataFromFileSystem[fieldDefinition.metadataType].childs[objectName].childs[itemName];
     } else {
@@ -796,19 +839,22 @@ function checkError(fieldDefinition, metadataFromFileSystem, objectName, itemNam
     }
 }
 
-function checkSpecialErrors(fieldDefinition, metadataFromFileSystem, objectName, itemName) {
-    if (fieldDefinition.metadataType === MetadataTypes.CUSTOM_OBJECT)
+function checkSpecialErrors(fieldDefinition: any, metadataFromFileSystem: { [key: string]: MetadataType }, objectName: string, itemName: string): boolean {
+    if (fieldDefinition.metadataType === MetadataTypes.CUSTOM_OBJECT) {
         return !metadataFromFileSystem[MetadataTypes.CUSTOM_FIELD] || !metadataFromFileSystem[MetadataTypes.CUSTOM_FIELD].childs[objectName];
+    }
     if (fieldDefinition.metadataType === MetadataTypes.CUSTOM_FIELD) {
-        if (objectName === 'Task')
+        if (objectName === 'Task') {
             return !metadataFromFileSystem[fieldDefinition.metadataType] || !metadataFromFileSystem[fieldDefinition.metadataType].childs['Activity'] || !metadataFromFileSystem[fieldDefinition.metadataType].childs['Activity'].childs[itemName];
-        if (objectName === 'Event')
+        }
+        if (objectName === 'Event') {
             return !metadataFromFileSystem[fieldDefinition.metadataType] || !metadataFromFileSystem[fieldDefinition.metadataType].childs['Activity'] || !metadataFromFileSystem[fieldDefinition.metadataType].childs['Activity'].childs[itemName];
+        }
     }
     return true;
 }
 
-function checkOnIgnoreErrors(fieldDefinition, ignoredMetadata, objectName, itemName) {
+function checkOnIgnoreErrors(fieldDefinition: any, ignoredMetadata: { [key: string]: any }, objectName: string, itemName: string): boolean {
     let hasError = false;
     const typeData = TYPES_XML_RELATION[fieldDefinition.metadataType];
     switch (fieldDefinition.metadataType) {
@@ -818,8 +864,9 @@ function checkOnIgnoreErrors(fieldDefinition, ignoredMetadata, objectName, itemN
         case MetadataTypes.AUTORESPONSE_RULES:
         case MetadataTypes.ESCALATION_RULES:
             hasError = checkErrorOnIgnoreMetadata(ignoredMetadata, typeData.singularName, objectName, itemName);
-            if (hasError)
+            if (hasError) {
                 hasError = checkErrorOnIgnoreMetadata(ignoredMetadata, fieldDefinition.metadataType, objectName, itemName);
+            }
             break;
         case MetadataTypes.SHARING_CRITERIA_RULE:
         case MetadataTypes.SHARING_OWNER_RULE:
@@ -842,12 +889,14 @@ function checkOnIgnoreErrors(fieldDefinition, ignoredMetadata, objectName, itemN
         case MetadataTypes.LISTVIEW:
         case MetadataTypes.FIELD_SET:
             hasError = checkErrorOnIgnoreMetadata(ignoredMetadata, typeData.parentName, objectName, itemName);
-            if (hasError)
+            if (hasError) {
                 hasError = checkErrorOnIgnoreMetadata(ignoredMetadata, fieldDefinition.metadataType, objectName, itemName);
+            }
             if (hasError && (objectName === 'Task' || objectName === 'Event')) {
                 hasError = checkErrorOnIgnoreMetadata(ignoredMetadata, typeData.parentName, 'Activity', itemName);
-                if (hasError)
+                if (hasError) {
                     hasError = checkErrorOnIgnoreMetadata(ignoredMetadata, fieldDefinition.metadataType, 'Activity', itemName);
+                }
             }
             break;
         case MetadataTypes.CUSTOM_OBJECT:
@@ -865,7 +914,7 @@ function checkOnIgnoreErrors(fieldDefinition, ignoredMetadata, objectName, itemN
     return hasError;
 }
 
-function checkErrorOnIgnoreMetadata(ignoredMetadata, metadataType, objectName, itemName) {
+function checkErrorOnIgnoreMetadata(ignoredMetadata: { [key: string]: any }, metadataType: string, objectName: string, itemName: string) {
     let hasError = false;
     if (metadataType === MetadataTypes.CUSTOM_OBJECT && ignoredMetadata[metadataType]['*'] && ignoredMetadata[metadataType]['*'].includes('*')) {
         hasError = false;
@@ -874,12 +923,13 @@ function checkErrorOnIgnoreMetadata(ignoredMetadata, metadataType, objectName, i
     } else if (ignoredMetadata[metadataType][objectName] && ignoredMetadata[metadataType][objectName].includes('*')) {
         hasError = false;
     } else if (objectName && itemName) {
-        if (ignoredMetadata[metadataType][objectName] && ignoredMetadata[metadataType][objectName].includes('*'))
+        if (ignoredMetadata[metadataType][objectName] && ignoredMetadata[metadataType][objectName].includes('*')) {
             hasError = false;
-        else if (ignoredMetadata[metadataType][objectName] && ignoredMetadata[metadataType][objectName].includes(itemName))
+        } else if (ignoredMetadata[metadataType][objectName] && ignoredMetadata[metadataType][objectName].includes(itemName)) {
             hasError = false;
-        else
+        } else {
             hasError = true;
+        }
     } else if (ignoredMetadata[metadataType][objectName]) {
         hasError = false;
     } else {
@@ -888,7 +938,7 @@ function checkErrorOnIgnoreMetadata(ignoredMetadata, metadataType, objectName, i
     return hasError;
 }
 
-function mustProcessType(metadataTypeName, fieldValue) {
+function mustProcessType(metadataTypeName: string, fieldValue: string): boolean {
     if (metadataTypeName === MetadataTypes.CUSTOM_TAB) {
         if (!fieldValue.startsWith('standard-')) {
             return true;
@@ -919,15 +969,16 @@ function mustProcessType(metadataTypeName, fieldValue) {
 
 }
 
-function isComplexField(fieldDefinition) {
-    return fieldDefinition.datatype === DataTypes.ARRAY || fieldDefinition.datatype === DataTypes.OBJECT;
+function isComplexField(fieldDefinition: any): boolean {
+    return fieldDefinition.datatype === Datatypes.ARRAY || fieldDefinition.datatype === Datatypes.OBJECT;
 }
 
-function haveComplexChild(field) {
+function haveComplexChild(field: any): boolean {
     if (field.fields) {
         for (let key of Object.keys(field.fields)) {
-            if (isComplexField(field.fields[key]))
+            if (isComplexField(field.fields[key])) {
                 return true;
+            }
         }
         return false;
     } else {
@@ -935,27 +986,32 @@ function haveComplexChild(field) {
     }
 }
 
-function createIgnoreMetadataMap(ignoredMetadata) {
-    const ignoreMetadataMap = {};
+function createIgnoreMetadataMap(ignoredMetadata: { [key: string]: string[] }): { [key: string]: any } {
+    const ignoreMetadataMap: { [key: string]: any } = {};
     for (const metadataTypeName of Object.keys(ignoredMetadata)) {
         ignoreMetadataMap[metadataTypeName] = createIgnoreTypeMap(ignoredMetadata[metadataTypeName]);
     }
     return ignoreMetadataMap;
 }
 
-function createIgnoreTypeMap(objectsForIgnore) {
-    let objectToIgnoreMap = {};
+function createIgnoreTypeMap(objectsForIgnore: string[]): { [key: string]: any } {
+    let objectToIgnoreMap: { [key: string]: any } = {};
     for (let objectToIgnore of objectsForIgnore) {
         if (objectToIgnore.indexOf(':') !== -1) {
             let splits = objectToIgnore.split(':');
             if (splits.length === 2) {
-                if (!objectToIgnoreMap[splits[0]])
+                if (!objectToIgnoreMap[splits[0]]) {
                     objectToIgnoreMap[splits[0]] = [];
+                }
                 objectToIgnoreMap[splits[0]].push(splits[1]);
             } else if (splits.length === 3 && splits[0].toLowerCase() === 'userpermission') {
-                if (!objectToIgnoreMap[splits[1]])
-                    objectToIgnoreMap[splits[1]] = [];
-                objectToIgnoreMap[splits[1]].push({ permission: splits[2] });
+                if (!objectToIgnoreMap['userpermission']) {
+                    objectToIgnoreMap['userpermission'] = {};
+                }
+                if (!objectToIgnoreMap['userpermission'][splits[1]]) {
+                    objectToIgnoreMap['userpermission'][splits[1]] = [];
+                }
+                objectToIgnoreMap['userpermission'][splits[1]].push(splits[2]);
             }
         } else {
             objectToIgnoreMap[objectToIgnore] = [objectToIgnore];
@@ -964,13 +1020,14 @@ function createIgnoreTypeMap(objectsForIgnore) {
     return objectToIgnoreMap;
 }
 
-function processErrors(errors, manager) {
-    if (errors === undefined)
+function processErrors(errors: { [key: string]: DependenciesRepairResponse }, manager: DependenciesManager): { [key: string]: DependenciesCheckResponse[] } | undefined {
+    if (errors === undefined) {
         return undefined;
+    }
     callEvent(manager, EVENT.PROCESS);
-    const result = {};
+    const result: { [key: string]: DependenciesCheckResponse[] } = {};
     for (const metadataTypeName of Object.keys(errors)) {
-        let errorsAdded = [];
+        let errorsAdded: string[] = [];
         callEvent(manager, EVENT.START_ERROR, metadataTypeName);
         const typeErrors = errors[metadataTypeName];
         for (let typeError of typeErrors.errors) {
@@ -994,8 +1051,9 @@ function processErrors(errors, manager) {
                             const errorKey = fileError.elementPath + fileError.value + fileError.metadataObject + nLine + startColumn + endColumn;
                             if (!errorsAdded.includes(errorKey)) {
                                 callEvent(manager, EVENT.FILE_ERROR, metadataTypeName, fileError.metadataObject, fileError.metadataItem, typeError.file);
-                                if (!result[metadataTypeName])
+                                if (!result[metadataTypeName]) {
                                     result[metadataTypeName] = [];
+                                }
                                 result[metadataTypeName].push({
                                     object: fileError.metadataObject,
                                     item: fileError.metadataItem,
@@ -1024,7 +1082,7 @@ function processErrors(errors, manager) {
     return result;
 }
 
-function countTabs(line) {
+function countTabs(line: string): number {
     let tabCounter = 0;
     for (let i = 0; i < line.length; i++) {
         if (line[i] !== '\t') {
