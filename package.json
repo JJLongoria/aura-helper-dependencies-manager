@@ -2,7 +2,7 @@
   "name": "@aurahelper/dependencies-manager",
   "productName": "Aura Helper Salesforce Dependencies Manager Module",
   "displayName": "Aura Helper Framework Salesforce Dependencies Manager",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Aura Helper Dependencies Manager Module is a module to handle, check or repair automatically the salesforce's project dependencies. This module analize your local project, and repair the metadata files accordinglly",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
