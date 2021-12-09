@@ -428,7 +428,7 @@ export class DependenciesManager {
      * 
      * @returns {DependenciesManager} Return the DependenciesManager object instance
      */
-    setTypesToRepair(typesToRepair: string | { [key: string]: MetadataType }): DependenciesManager {
+    setTypesToRepair(typesToRepair?: string | { [key: string]: MetadataType }): DependenciesManager {
         this.typesToRepair = typesToRepair;
         return this;
     }
@@ -529,7 +529,7 @@ export class DependenciesManager {
         const metadataFromFileSystem = MetadataFactory.createMetadataTypesFromFileSystem(folderMetadataMap, this.projectFolder);
         const result = repair(metadataFromFileSystem, this);
         if(result){
-
+            return result;
         }
         return undefined;
     }
