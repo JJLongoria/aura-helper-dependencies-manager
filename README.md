@@ -996,7 +996,7 @@ When you only check dependencies errors the response error has the next structur
         "MetadataTypeName": [
             {
                 "object": "MetadataObject",
-                "item": "MetadataItem"
+                "item": "MetadataItem",
                 "line": 16,
                 "startColumn": 146,
                 "endColumn": 166,
@@ -1006,7 +1006,7 @@ When you only check dependencies errors the response error has the next structur
             },
             {
                 "object": "MetadataObject",
-                "item": "MetadataItem"
+                "item": "MetadataItem",
                 "line": 17,
                 "startColumn": 146,
                 "endColumn": 166,
