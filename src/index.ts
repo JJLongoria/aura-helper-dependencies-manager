@@ -697,12 +697,15 @@ function processXMLFile(xmlDefinition: any, metadataFromFileSystem: { [key: stri
         }
         return fileErrors;
     } catch (error) {
-        throw error;
+        return undefined;
     }
 }
 
 function processXMLField(xmlDefinition: any, fieldValue: any, fieldDefinition: any, metadataFromFileSystem: { [key: string]: MetadataType }, manager: DependenciesManager): DependencyError[] | undefined {
     let errors: DependencyError[] | undefined = [];
+    if(fieldDefinition.key.toLowerCase() === 'fullname'){
+        return undefined;
+    }
     if (isComplexField(fieldDefinition)) {
         if (Array.isArray(fieldValue) || fieldDefinition.datatype === Datatypes.ARRAY) {
             fieldValue = XMLUtils.forceArray(fieldValue);
